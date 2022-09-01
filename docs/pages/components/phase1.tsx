@@ -19,7 +19,7 @@ export default function LandingPage() {
         </Typography>
         <ComboBox />
         <Typography variant="body3">
-          <pre>{JSON.stringify(countries, null, 2)}</pre>
+          {/* <pre>{JSON.stringify(countries, null, 2)}</pre> */}
         </Typography>
       </Container>
     </BrandingRoot>
