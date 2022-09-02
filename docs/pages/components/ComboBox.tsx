@@ -4,6 +4,7 @@ import countries from './countries';
 export default function ComboBox() {
   const [searchTerm, setSearchTerm] = useState('');
   const [inputValue, setInputValue] = useState('');
+  const [value, setValue] = useState('');
   const [showList, setShowList] = useState(false);
   const [activeOption, setActiveOption] = useState(-1);
 
@@ -65,7 +66,10 @@ export default function ComboBox() {
       setActiveOption(activeOption + 1 < filteredCountries.length - 1 ? activeOption + 1 : 0);
     }
   };
-  const submit = (val: string) => {};
+  const submit = (val: string) => {
+    setValue(val);
+    setShowList(false);
+  };
   const onOptionClick = (val: string) => {
     setSearchTerm(val);
     submit(val);
@@ -105,6 +109,11 @@ export default function ComboBox() {
       {showList && (
         <div className="list">
           <ul>{Options()}</ul>
+        </div>
+      )}
+      {value && (
+        <div className='result'>
+          SearchResult is : <strong>{value}</strong>
         </div>
       )}
     </div>
