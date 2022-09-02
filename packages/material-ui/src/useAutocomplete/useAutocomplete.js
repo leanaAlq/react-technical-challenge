@@ -316,8 +316,9 @@ export default function useAutocomplete(props) {
   };
 
   const setHighlightedIndex = useEventCallback(({ event, index, reason = 'auto' }) => {
+    console.log('index', index);
     highlightedIndexRef.current = index;
-
+    console.log('filteredOptions[index]', filteredOptions, index);
     // does the index exist?
     if (index === -1) {
       inputRef.current.removeAttribute('aria-activedescendant');
