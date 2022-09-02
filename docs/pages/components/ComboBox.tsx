@@ -7,27 +7,44 @@ export default function ComboBox() {
   const [value, setValue] = useState('');
   const [showList, setShowList] = useState(false);
   const [activeOption, setActiveOption] = useState(-1);
-
+  const filteredCountries = useMemo(() => {
+    return [...countries].filter((country: Country) =>
+      country.label.toLowerCase().includes(inputValue),
+    );
+  }, [inputValue]);
   useEffect(() => {
     if (searchTerm && !showList) {
       setShowList(true);
     }
     if (!searchTerm && showList) setShowList(false);
-  }, [searchTerm]);
+  }, [searchTerm, showList]);
 
   useEffect(() => {
     if (activeOption >= 0 && filteredCountries.length - 1 >= activeOption) {
       setSearchTerm(filteredCountries[activeOption].label);
     }
-  }, [activeOption]);
+  }, [activeOption, filteredCountries]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setSearchTerm(value);
-    setInputValue(value);
+    setSearchTerm(e.target.value);
+    setInputValue(e.target.value);
   };
-
-  const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
+  const submit = (val: string) => {
+    setValue(val);
+    setShowList(false);
+  };
+  const isPrintableCharacter = (str: string) => {
+    return str.length === 1 && str.match(/\S| /);
+  };
+  const activateOption = (direction: string) => {
+    if (activeOption < 0) setShowList(false);
+    if (direction === 'up' && activeOption > 0) {
+      setActiveOption(activeOption - 1);
+    } else {
+      setActiveOption(activeOption + 1 < filteredCountries.length - 1 ? activeOption + 1 : 0);
+    }
+  };
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     // e.preventDefault();
     // e.stopPropagation();
     const { key } = e;
@@ -37,10 +54,10 @@ export default function ComboBox() {
     switch (key) {
       case 'Esc':
       case 'Escape':
-        showList && setShowList(false);
+        if (showList) setShowList(false);
         break;
       case 'Enter':
-        searchTerm && submit(searchTerm);
+        if (searchTerm) submit(searchTerm);
         break;
       case 'Down':
       case 'ArrowDown':
@@ -52,24 +69,10 @@ export default function ComboBox() {
         activateOption('up');
         break;
       default:
-        return;
+        break;
     }
   };
-  const isPrintableCharacter = (str: string) => {
-    return str.length === 1 && str.match(/\S| /);
-  };
-  const activateOption = (direction: string) => {
-    activeOption < 0 && setShowList(false);
-    if (direction == 'up' && activeOption > 0) {
-      setActiveOption(activeOption - 1);
-    } else {
-      setActiveOption(activeOption + 1 < filteredCountries.length - 1 ? activeOption + 1 : 0);
-    }
-  };
-  const submit = (val: string) => {
-    setValue(val);
-    setShowList(false);
-  };
+
   const onOptionClick = (val: string) => {
     setSearchTerm(val);
     submit(val);
@@ -78,16 +81,18 @@ export default function ComboBox() {
   const Option = (props: Option) => {
     const { option, className, onClick } = props;
     return (
-      <li className={`option ${className}`} onClick={() => onClick(option.label)}>
+      <li
+        className={`option ${className}`}
+        onClick={() => onClick(option.label)}
+        onKeyDown={() => handleKeyDown}
+        role="option"
+        aria-selected={className.includes('active')}
+      >
         {option.label}
       </li>
     );
   };
-  const filteredCountries = useMemo(() => {
-    return [...countries].filter((country: Country) =>
-      country.label.toLowerCase().includes(inputValue),
-    );
-  }, [inputValue]);
+
   const Options = () =>
     filteredCountries.map((country: Country, i) => (
       <Option
@@ -100,19 +105,19 @@ export default function ComboBox() {
   return (
     <div className="ComboBox">
       <input
-        className={`search-input ${showList ? 'result' : ''}`}
+        className={`search-input ${showList ? 'list-active' : ''}`}
         onChange={handleInputChange}
         value={searchTerm}
-        onKeyDown={handleKeyUp}
+        onKeyDown={handleKeyDown}
         placeholder={'Search'}
-      ></input>
+      />
       {showList && (
         <div className="list">
-          <ul>{Options()}</ul>
+          <ul className="option-list">{Options()}</ul>
         </div>
       )}
       {value && (
-        <div className='result'>
+        <div className="result">
           SearchResult is : <strong>{value}</strong>
         </div>
       )}

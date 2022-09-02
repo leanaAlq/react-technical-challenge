@@ -3,7 +3,6 @@ import BrandingRoot from 'docs/src/modules/branding/BrandingRoot';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 // You can use this dataset for the component
-import countries from './countries';
 import ComboBox from './ComboBox';
 
 /**

@@ -17,7 +17,7 @@
 .search-input:focus-visible {
   outline: none;
 }
-.search-input.result {
+.search-input.list-active {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
   background: aliceblue;
@@ -27,7 +27,7 @@
   border: solid lightgrey;
   border-width: 0 1px 1px;
 }
-ul {
+ul.option-list {
   padding: 0;
   max-height: 300px;
   overflow-y: auto;
