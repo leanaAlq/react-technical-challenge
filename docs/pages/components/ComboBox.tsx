@@ -1,4 +1,3 @@
-import { filter } from 'lodash';
 import React, { useState, useEffect, KeyboardEvent, ChangeEvent, useMemo } from 'react';
 import countries from './countries';
 
@@ -14,26 +13,22 @@ export default function ComboBox() {
     }
     if (!searchTerm && showList) setShowList(false);
   }, [searchTerm]);
-  useEffect(() => {
-    filterCountries();
-  }, [inputValue]);
 
   useEffect(() => {
-    console.log('option', activeOption);
-    activeOption >= 0 && setSearchTerm(countries[activeOption].label);
+    if (activeOption >= 0 && filteredCountries.length - 1 >= activeOption) {
+      setSearchTerm(filteredCountries[activeOption].label);
+    }
   }, [activeOption]);
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log('onchnage');
     const { value } = e.target;
     setSearchTerm(value);
     setInputValue(value);
   };
-  const filterCountries = () => {
-    // todo: filterCountries by searchTerm
-  };
 
   const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
-    console.log('keyup', e.key);
+    // e.preventDefault();
+    // e.stopPropagation();
     const { key } = e;
     if (isPrintableCharacter(key)) {
       return;
@@ -44,88 +39,84 @@ export default function ComboBox() {
         showList && setShowList(false);
         break;
       case 'Enter':
-        searchTerm && submit();
+        searchTerm && submit(searchTerm);
         break;
       case 'Down':
       case 'ArrowDown':
         activateOption('down');
+
         break;
       case 'Up':
       case 'ArrowUp':
         activateOption('up');
         break;
+      default:
+        return;
     }
-    // todo
   };
   const isPrintableCharacter = (str: string) => {
     return str.length === 1 && str.match(/\S| /);
   };
-  // todo: type
   const activateOption = (direction: string) => {
-    console.log('direction', direction);
-    console.log('activeOption', activeOption);
     activeOption < 0 && setShowList(false);
     if (direction == 'up' && activeOption > 0) {
       setActiveOption(activeOption - 1);
     } else {
-      setActiveOption(activeOption + 1);
+      setActiveOption(activeOption + 1 < filteredCountries.length - 1 ? activeOption + 1 : 0);
     }
   };
-  const submit = () => {
-    console.log('do some action with ', searchTerm);
+  const submit = (val: string) => {};
+  const onOptionClick = (val: string) => {
+    setSearchTerm(val);
+    submit(val);
   };
 
-  // todo: decalre option type
-  const Option = (props: any) => {
+  const Option = (props: Option) => {
     const { option, className, onClick } = props;
     return (
-      <li className={`option ${className}`} onClick={onClick}>
+      <li className={`option ${className}`} onClick={() => onClick(option.label)}>
         {option.label}
       </li>
     );
   };
-  const Options = useMemo(() => {
-    // countries.reduce((filteredCountries: any, country: any, i: number) => {
-    //   filteredCountries.push(<Option key={country.code + i} />);
-    //   return filterCountries;
-    // },[]);
-
-    const filteredCountries = countries.reduce((filtered: any, country, i) => {
-      if (country.label.toLowerCase().includes(searchTerm)) {
-        filtered.push(<Option option={country} key={country.code + i} />);
-      }
-      return filtered;
-    }, []);
-    console.log(filteredCountries);
-    return filteredCountries;
+  const filteredCountries = useMemo(() => {
+    return [...countries].filter((country: Country) =>
+      country.label.toLowerCase().includes(inputValue),
+    );
   }, [inputValue]);
+  const Options = () =>
+    filteredCountries.map((country: Country, i) => (
+      <Option
+        option={country}
+        key={country.code + i}
+        onClick={onOptionClick}
+        className={`${activeOption === i ? 'active' : ''}`}
+      />
+    ));
   return (
     <div className="ComboBox">
       <input
-        className="search-input"
+        className={`search-input ${showList ? 'result' : ''}`}
         onChange={handleInputChange}
         value={searchTerm}
-        onKeyUp={handleKeyUp}
+        onKeyDown={handleKeyUp}
+        placeholder={'Search'}
       ></input>
       {showList && (
         <div className="list">
-          <ul>
-            {Options}
-            {/* todo : type
-            {countries.map((country: any, i) => (
-              <Option
-                option={country}
-                key={country.code + i}
-                className={`${activeOption === i ? 'active' : ''}`}
-                onClick={() => {
-                  setSearchTerm(country.label);
-                  submit();
-                }}
-              />
-            ))} */}
-          </ul>
+          <ul>{Options()}</ul>
         </div>
       )}
     </div>
   );
+}
+interface Country {
+  code: string;
+  label: string;
+  phone: string;
+}
+interface Option {
+  option: Country;
+  onClick: any;
+  className: string;
 }
